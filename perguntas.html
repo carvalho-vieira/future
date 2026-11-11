@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Espelho do Futuro - Quiz</title>
+
+<style>
+
+/* =========================================================
+   CONFIGURAÇÕES GERAIS
+========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 15% 20%, #182b63 0%, transparent 35%),
+        radial-gradient(circle at 85% 80%, #073d5e 0%, transparent 35%),
+        linear-gradient(135deg,#050816,#08152d,#071d35);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    overflow-x:hidden;
+}
+
+/* Fundo animado */
+
+body::before{
+    content:"";
+    position:fixed;
+    width:500px;
+    height:500px;
+    border-radius:50%;
+    background:rgba(0,191,255,0.08);
+    filter:blur(80px);
+    top:-150px;
+    left:-150px;
+    animation:mover 8s infinite alternate ease-in-out;
+    pointer-events:none;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    width:450px;
+    height:450px;
+    border-radius:50%;
+    background:rgba(76,0,255,0.08);
+    filter:blur(80px);
+    bottom:-150px;
+    right:-150px;
+    animation:mover2 10s infinite alternate ease-in-out;
+    pointer-events:none;
+}
+
+@keyframes mover{
+    from{
+        transform:translate(0,0);
+    }
+    to{
+        transform:translate(180px,120px);
+    }
+}
+
+@keyframes mover2{
+    from{
+        transform:translate(0,0);
+    }
+    to{
+        transform:translate(-160px,-100px);
+    }
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.container{
+    width:100%;
+    max-width:900px;
+    position:relative;
+    z-index:2;
+}
+
+
+/* =========================================================
+   TÍTULO
+========================================================= */
+
+.titulo{
+    text-align:center;
+    margin-bottom:25px;
+    animation:aparecer .8s ease;
+}
+
+.titulo h1{
+    font-size:38px;
+    margin-bottom:8px;
+
+    background:linear-gradient(90deg,#4facfe,#00f2fe);
+
+    background-clip:text;
+    -webkit-background-clip:text;
+
+    -webkit-text-fill-color:transparent;
+}
+
+.titulo p{
+    color:#b9c5e8;
+    font-size:16px;
+}
+
+
+/* =========================================================
+   CAIXA DO QUIZ
+========================================================= */
+
+.quiz-box{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.15);
+    backdrop-filter:blur(18px);
+    border-radius:25px;
+    padding:30px;
+    box-shadow:
+        0 25px 70px rgba(0,0,0,0.45),
+        inset 0 1px rgba(255,255,255,0.08);
+}
+
+
+/* =========================================================
+   PROGRESSO
+========================================================= */
+
+.progresso-info{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:9px;
+    color:#8edfff;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.progresso{
+    width:100%;
+    height:8px;
+    background:#202b4d;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:28px;
+}
+
+.progresso-barra{
+    height:100%;
+    width:16.66%;
+    background:linear-gradient(90deg,#4facfe,#00f2fe);
+    border-radius:20px;
+    transition:.5s ease;
+    box-shadow:0 0 15px rgba(0,242,254,.5);
+}
+
+
+/* =========================================================
+   PERGUNTAS
+========================================================= */
+
+.pergunta-numero{
+    color:#7ddcff;
+    font-size:14px;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+.pergunta{
+    font-size:26px;
+    line-height:1.3;
+    margin-bottom:10px;
+}
+
+.instrucao{
+    color:#aebbd8;
+    font-size:14px;
+    margin-bottom:22px;
+}
+
+
+/* =========================================================
+   ALTERNATIVAS
+========================================================= */
+
+.alternativas{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:13px;
+}
+
+.alternativa{
+    position:relative;
+    width:100%;
+    min-height:68px;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.055);
+    color:white;
+    padding:16px 18px;
+    border-radius:16px;
+    text-align:left;
+    font-size:15px;
+    cursor:pointer;
+    transition:.25s ease;
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.alternativa:hover{
+    background:rgba(79,172,254,.15);
+    border-color:#4facfe;
+    transform:translateY(-2px);
+}
+
+.alternativa.selecionada{
+    background:rgba(79,172,254,.23);
+    border:2px solid #4facfe;
+    box-shadow:
+        0 0 20px rgba(79,172,254,.12);
+}
+
+.check{
+    width:23px;
+    height:23px;
+    min-width:23px;
+    border:2px solid #65769e;
+    border-radius:7px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.2s;
+}
+
+.alternativa.selecionada .check{
+    background:#4facfe;
+    border-color:#4facfe;
+    color:#06101f;
+}
+
+.check::after{
+    content:"✓";
+    font-weight:bold;
+    font-size:15px;
+    opacity:0;
+}
+
+.alternativa.selecionada .check::after{
+    opacity:1;
+}
+
+
+/* =========================================================
+   BOTÃO
+========================================================= */
+
+.botao{
+    margin-top:25px;
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:15px;
+    background:linear-gradient(90deg,#4facfe,#00f2fe);
+    color:#06101f;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.botao:hover{
+    transform:scale(1.02);
+    box-shadow:0 0 25px rgba(0,242,254,.2);
+}
+
+.botao:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+}
+
+
+/* =========================================================
+   RESULTADO
+========================================================= */
+
+#resultado{
+    display:none;
+    text-align:center;
+    animation:aparecer .7s ease;
+}
+
+.icone-resultado{
+    font-size:70px;
+    margin-bottom:10px;
+    animation:flutuar 2s infinite ease-in-out;
+}
+
+#resultado h2{
+    font-size:30px;
+    margin-bottom:10px;
+}
+
+#profissaoPrincipal{
+    color:#66ddff;
+    font-size:30px;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.descricao{
+    color:#cbd5f0;
+    line-height:1.6;
+    margin-bottom:25px;
+}
+
+
+/* =========================================================
+   CARDS DE RESULTADO
+========================================================= */
+
+.lista-resultados{
+    display:grid;
+    gap:12px;
+    margin-top:20px;
+}
+
+.resultado-profissao{
+    background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:17px;
+    padding:17px;
+    text-align:left;
+    transition:.25s;
+}
+
+.resultado-profissao:hover{
+    transform:translateY(-3px);
+    border-color:rgba(79,172,254,.5);
+}
+
+.resultado-topo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.posicao{
+    font-size:22px;
+    min-width:32px;
+}
+
+.emoji-profissao{
+    font-size:28px;
+}
+
+.nome-profissao{
+    color:#7ddcff;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.area-profissao{
+    color:#aab8d5;
+    font-size:13px;
+    margin-top:3px;
+}
+
+.barra-profissao{
+    height:7px;
+    background:#202b4d;
+    border-radius:20px;
+    margin-top:12px;
+    overflow:hidden;
+}
+
+.barra-profissao div{
+    height:100%;
+    background:linear-gradient(90deg,#4facfe,#00f2fe);
+    border-radius:20px;
+    transition:1s;
+}
+
+.porcentagem{
+    display:block;
+    color:#b9c5e8;
+    font-size:12px;
+    margin-top:6px;
+}
+
+
+/* =========================================================
+   AVISO DO RESULTADO
+========================================================= */
+
+.resultado-info{
+    margin-top:20px;
+    padding:14px;
+    background:rgba(79,172,254,.08);
+    border:1px solid rgba(79,172,254,.2);
+    border-radius:14px;
+    color:#b9c5e8;
+    font-size:13px;
+    line-height:1.5;
+}
+
+
+/* =========================================================
+   AGRADECIMENTO
+========================================================= */
+
+#agradecimento{
+    display:none;
+    text-align:center;
+    animation:aparecer .8s ease;
+}
+
+.agradecimento-icone{
+    font-size:75px;
+    margin-bottom:15px;
+    animation:flutuar 2s ease-in-out infinite;
+}
+
+#agradecimento h1{
+    font-size:34px;
+    margin-bottom:12px;
+}
+
+#agradecimento h2{
+    color:#66ddff;
+    font-size:22px;
+    margin-bottom:25px;
+}
+
+#agradecimento p{
+    color:#cbd5f0;
+    line-height:1.7;
+    font-size:16px;
+    max-width:600px;
+    margin:0 auto 15px;
+}
+
+#agradecimento strong{
+    color:#66ddff;
+}
+
+.mensagem-final{
+    margin:30px auto 20px;
+    padding:18px;
+    max-width:550px;
+    background:rgba(79,172,254,.12);
+    border:1px solid rgba(79,172,254,.3);
+    border-radius:18px;
+    font-size:20px;
+}
+
+.mensagem-final span{
+    color:#7ddcff;
+}
+
+.frase-final{
+    font-size:17px !important;
+    font-weight:bold;
+}
+
+
+/* Abertura especial da tela de agradecimento */
+#agradecimento.abertura-especial{
+    animation: telaAgradecimentoEntrar 1s cubic-bezier(.2,.8,.2,1) both;
+}
+
+#agradecimento.abertura-especial .agradecimento-icone{
+    animation: iconeCelebracao 1.15s ease-out both, flutuar 2.4s 1.15s ease-in-out infinite;
+    filter:drop-shadow(0 0 18px rgba(0,242,254,.55));
+}
+
+#agradecimento.abertura-especial h1,
+#agradecimento.abertura-especial h2,
+#agradecimento.abertura-especial p,
+#agradecimento.abertura-especial .mensagem-final,
+#agradecimento.abertura-especial .surpresa-area,
+#agradecimento.abertura-especial > button{
+    animation: conteudoSubir .7s ease both;
+}
+
+#agradecimento.abertura-especial h1{animation-delay:.12s;}
+#agradecimento.abertura-especial h2{animation-delay:.22s;}
+#agradecimento.abertura-especial p{animation-delay:.30s;}
+#agradecimento.abertura-especial .mensagem-final{animation-delay:.40s;}
+#agradecimento.abertura-especial .surpresa-area{animation-delay:.50s;}
+#agradecimento.abertura-especial > button{animation-delay:.62s;}
+
+.efeito-entrada{
+    position:fixed;
+    inset:0;
+    z-index:5;
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.particula-entrada{
+    position:absolute;
+    left:var(--x);
+    top:var(--y);
+    font-size:var(--tamanho);
+    color:#8ceaff;
+    opacity:0;
+    text-shadow:0 0 12px rgba(0,242,254,.9);
+    animation: particulaExplodir var(--duracao) ease-out var(--atraso) forwards;
+}
+
+.flash-entrada{
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at center,rgba(0,191,255,.24),transparent 62%);
+    animation: flashSuave .9s ease-out forwards;
+}
+
+@keyframes telaAgradecimentoEntrar{
+    0%{opacity:0;transform:translateY(24px) scale(.96);filter:blur(8px);}
+    65%{opacity:1;filter:blur(0);}
+    100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
+}
+
+@keyframes iconeCelebracao{
+    0%{transform:scale(.35) rotate(-25deg);opacity:0;}
+    65%{transform:scale(1.2) rotate(8deg);opacity:1;}
+    100%{transform:scale(1) rotate(0);}
+}
+
+@keyframes conteudoSubir{
+    from{opacity:0;transform:translateY(18px);}
+    to{opacity:1;transform:translateY(0);}
+}
+
+@keyframes particulaExplodir{
+    0%{opacity:0;transform:translate(0,0) scale(.2) rotate(0);}
+    15%{opacity:1;}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.25) rotate(180deg);}
+}
+
+@keyframes flashSuave{
+    0%{opacity:0;}
+    25%{opacity:1;}
+    100%{opacity:0;}
+}
+
+@media(prefers-reduced-motion:reduce){
+    #agradecimento.abertura-especial,
+    #agradecimento.abertura-especial *,
+    .particula-entrada,
+    .flash-entrada{
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+    }
+}
+
+
+/* =========================================================
+   INTERAÇÃO DA TELA DE AGRADECIMENTO
+========================================================= */
+
+.surpresa-area{
+    margin:28px auto 18px;
+    max-width:560px;
+}
+
+.surpresa-texto{
+    color:#aebbd8;
+    font-size:14px;
+    margin-bottom:12px;
+}
+
+.botao-surpresa{
+    border:1px solid rgba(0,242,254,.55);
+    background:linear-gradient(110deg,rgba(79,172,254,.18),rgba(0,242,254,.10));
+    color:#dffaff;
+    padding:14px 22px;
+    border-radius:14px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s ease;
+    box-shadow:0 0 22px rgba(0,191,255,.08);
+}
+
+.botao-surpresa:hover{
+    transform:translateY(-3px) scale(1.02);
+    background:linear-gradient(110deg,rgba(79,172,254,.32),rgba(0,242,254,.2));
+    box-shadow:0 0 28px rgba(0,191,255,.22);
+}
+
+.mensagem-surpresa{
+    display:none;
+    margin:18px auto 0;
+    padding:20px;
+    border-radius:18px;
+    max-width:540px;
+    background:linear-gradient(135deg,rgba(79,172,254,.16),rgba(120,80,255,.12));
+    border:1px solid rgba(125,220,255,.35);
+    color:#eafaff;
+    line-height:1.6;
+    box-shadow:0 12px 35px rgba(0,0,0,.18);
+}
+
+.mensagem-surpresa.visivel{
+    display:block;
+    animation:mensagemEntrar .55s ease both;
+}
+
+.mensagem-surpresa .estrela{
+    display:block;
+    font-size:27px;
+    margin-bottom:8px;
+    animation:flutuar 2s infinite ease-in-out;
+}
+
+.mensagem-surpresa strong{
+    color:#7ddcff;
+}
+
+@keyframes mensagemEntrar{
+    from{opacity:0;transform:translateY(15px) scale(.97);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.particulas-final{
+    position:relative;
+    height:24px;
+    margin:8px auto 0;
+    color:#7ddcff;
+    letter-spacing:18px;
+    font-size:15px;
+    opacity:.8;
+    animation: brilhoFinal 2.5s infinite alternate;
+}
+
+@keyframes brilhoFinal{
+    from{opacity:.35;transform:translateY(0);}
+    to{opacity:1;transform:translateY(-4px);}
+}
+
+
+/* =========================================================
+   ANIMAÇÕES
+========================================================= */
+
+@keyframes aparecer{
+    from{
+        opacity:0;
+        transform:translateY(25px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes flutuar{
+    0%,100%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-10px);
+    }
+}
+
+
+/* =========================================================
+   CELULAR
+========================================================= */
+
+@media(max-width:650px){
+
+    body{
+        padding:12px;
+    }
+
+    .quiz-box{
+        padding:20px;
+        border-radius:20px;
+    }
+
+    .titulo h1{
+        font-size:29px;
+    }
+
+    .pergunta{
+        font-size:21px;
+    }
+
+    .alternativas{
+        grid-template-columns:1fr;
+    }
+
+    .alternativa{
+        min-height:60px;
+    }
+
+    #resultado h2{
+        font-size:25px;
+    }
+
+    #profissaoPrincipal{
+        font-size:25px;
+    }
+
+    #agradecimento h1{
+        font-size:27px;
+    }
+}
+
+
+
+/* FOTO OPCIONAL VINDO DA ETAPA DA CÂMERA */
+.foto-participante{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    width:max-content;
+    max-width:100%;
+    margin:0 auto 22px;
+    padding:9px 16px 9px 9px;
+    border:1px solid rgba(0,183,255,.35);
+    border-radius:999px;
+    background:rgba(0,183,255,.08);
+    color:#d9f5ff;
+    font-size:13px;
+}
+.foto-participante img{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #00d4ff;
+    box-shadow:0 0 15px rgba(0,183,255,.35);
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- =====================================================
+         TÍTULO
+    ====================================================== -->
+
+    <div class="titulo">
+
+        <h1>🔮 Espelho do Futuro</h1>
+
+        <p>
+            Descubra quais profissões combinam com você.
+        </p>
+
+    </div>
+
+    <div class="foto-participante" id="fotoParticipante" aria-live="polite">
+        <img id="miniaturaParticipante" alt="Sua foto capturada na etapa anterior">
+        <span>✨ Foto registrada na sua experiência</span>
+    </div>
+
+    <div class="quiz-box">
+
+
+        <!-- =================================================
+             QUIZ
+        ================================================== -->
+
+        <div id="quiz">
+
+            <div class="progresso-info">
+
+                <span id="numeroPergunta">
+                    PERGUNTA 1 DE 6
+                </span>
+
+                <span id="contadorSelecionadas">
+                    0 selecionadas
+                </span>
+
+            </div>
+
+
+            <div class="progresso">
+
+                <div
+                    class="progresso-barra"
+                    id="barra">
+                </div>
+
+            </div>
+
+
+            <h2
+                class="pergunta"
+                id="textoPergunta">
+            </h2>
+
+
+            <p class="instrucao">
+                Você pode escolher mais de uma alternativa.
+            </p>
+
+
+            <div
+                class="alternativas"
+                id="alternativas">
+            </div>
+
+
+            <button
+                class="botao"
+                id="botaoContinuar"
+                disabled>
+
+                Continuar →
+
+            </button>
+
+        </div>
+
+
+
+        <!-- =================================================
+             RESULTADO
+        ================================================== -->
+
+        <div id="resultado">
+
+            <div class="icone-resultado">
+                ✨
+            </div>
+
+
+            <h2>
+                Seu futuro profissional
+                pode estar aqui!
+            </h2>
+
+
+            <div id="profissaoPrincipal">
+            </div>
+
+
+            <p
+                class="descricao"
+                id="descricaoResultado">
+            </p>
+
+
+            <h3>
+                🏆 Suas principais combinações
+            </h3>
+
+
+            <div
+                class="lista-resultados"
+                id="listaResultados">
+            </div>
+
+
+            <div class="resultado-info">
+
+                💡 O resultado representa uma afinidade
+                baseada nas escolhas feitas durante a experiência.
+                Seu futuro pode ter muitos caminhos!
+
+            </div>
+
+
+            <button
+                class="botao"
+                onclick="mostrarAgradecimento()">
+
+                ✨ Finalizar experiência
+
+            </button>
+
+        </div>
+
+
+
+        <!-- =================================================
+             AGRADECIMENTO
+        ================================================== -->
+
+        <div id="agradecimento">
+
+            <div class="agradecimento-icone">
+                ✨
+            </div>
+
+
+            <h1>
+                Obrigado por participar! 💙
+            </h1>
+
+
+            <h2>
+                O futuro começa com uma escolha.
+            </h2>
+
+
+            <p>
+                Agradecemos por viver essa experiência
+                com o <strong>Espelho do Futuro</strong>.
+            </p>
+
+
+            <p>
+                Esperamos que essa jornada tenha ajudado
+                você a conhecer um pouco mais sobre seus
+                interesses, talentos e possibilidades
+                para o futuro.
+            </p>
+
+
+            <div class="mensagem-final">
+
+                🔮
+
+                <span>
+                    Seu futuro ainda está sendo escrito.
+                </span>
+
+            </div>
+
+
+            <p class="frase-final">
+                Continue explorando, aprendendo e
+                acreditando no seu potencial!
+            </p>
+
+            <div class="surpresa-area">
+                <div class="particulas-final">✦ · ✧ · ✦</div>
+                <p class="surpresa-texto">
+                    Antes de ir, existe uma mensagem especial esperando por você.
+                </p>
+                <button
+                    class="botao-surpresa"
+                    id="botaoSurpresa"
+                    onclick="revelarMensagem()">
+                    ✨ Revelar mensagem surpresa
+                </button>
+
+                <div class="mensagem-surpresa" id="mensagemSurpresa" aria-live="polite">
+                    <span class="estrela">🌟</span>
+                    <span id="textoSurpresa"></span>
+                </div>
+            </div>
+
+            <button
+                class="botao"
+                onclick="voltarInicio()">
+
+                🏠 Fazer o quiz novamente
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+/* =========================================================
+   PROFISSÕES
+========================================================= */
+
+const profissoes = {
+
+    programador:{
+        nome:"Programador",
+        emoji:"💻",
+        area:"Tecnologia"
+    },
+
+    medico:{
+        nome:"Médico",
+        emoji:"🩺",
+        area:"Saúde"
+    },
+
+    psicologo:{
+        nome:"Psicólogo",
+        emoji:"🧠",
+        area:"Saúde e Humanas"
+    },
+
+    advogado:{
+        nome:"Advogado",
+        emoji:"⚖️",
+        area:"Direito"
+    },
+
+    engenheiro:{
+        nome:"Engenheiro",
+        emoji:"⚙️",
+        area:"Engenharia"
+    },
+
+    arquiteto:{
+        nome:"Arquiteto",
+        emoji:"🏛️",
+        area:"Arquitetura"
+    },
+
+    designer:{
+        nome:"Designer",
+        emoji:"🎨",
+        area:"Criatividade"
+    },
+
+    fotografo:{
+        nome:"Fotógrafo",
+        emoji:"📸",
+        area:"Audiovisual"
+    },
+
+    videomaker:{
+        nome:"Video Maker",
+        emoji:"🎬",
+        area:"Audiovisual"
+    },
+
+    professor:{
+        nome:"Professor",
+        emoji:"👨‍🏫",
+        area:"Educação"
+    },
+
+    veterinario:{
+        nome:"Veterinário",
+        emoji:"🐾",
+        area:"Saúde Animal"
+    },
+
+    dentista:{
+        nome:"Dentista",
+        emoji:"🦷",
+        area:"Saúde"
+    },
+
+    enfermeiro:{
+        nome:"Enfermeiro",
+        emoji:"🧑‍⚕️",
+        area:"Saúde"
+    },
+
+    cientista:{
+        nome:"Cientista",
+        emoji:"🔬",
+        area:"Ciência"
+    },
+
+    piloto:{
+        nome:"Piloto",
+        emoji:"✈️",
+        area:"Aviação"
+    },
+
+    bombeiro:{
+        nome:"Bombeiro",
+        emoji:"🚒",
+        area:"Segurança"
+    },
+
+    policial:{
+        nome:"Policial",
+        emoji:"👮",
+        area:"Segurança"
+    },
+
+    empresario:{
+        nome:"Empresário",
+        emoji:"💼",
+        area:"Negócios"
+    },
+
+    marketing:{
+        nome:"Profissional de Marketing",
+        emoji:"📣",
+        area:"Marketing"
+    },
+
+    criador:{
+        nome:"Criador de Conteúdo",
+        emoji:"📱",
+        area:"Comunicação"
+    }
+
+};
+
+
+/* =========================================================
+   PERGUNTAS
+========================================================= */
+
+const perguntas = [
+
+    {
+        texto:"O que você mais gosta de fazer no seu tempo livre?",
+
+        alternativas:[
+
+            ["💻 Mexer com tecnologia, computadores ou programação",
+             ["programador","engenheiro"]],
+
+            ["🎨 Criar desenhos, fotos, vídeos ou projetos visuais",
+             ["designer","fotografo","videomaker"]],
+
+            ["🧠 Conversar, ouvir e ajudar outras pessoas",
+             ["psicologo","professor","enfermeiro"]],
+
+            ["🔬 Pesquisar, descobrir e entender como as coisas funcionam",
+             ["cientista","medico","engenheiro"]],
+
+            ["🐾 Cuidar de animais",
+             ["veterinario"]],
+
+            ["✈️ Viajar e viver novas experiências",
+             ["piloto","criador"]]
+
+        ]
+    },
+
+
+    {
+        texto:"Qual ambiente de trabalho mais combina com você?",
+
+        alternativas:[
+
+            ["🖥️ Escritório moderno com computadores e tecnologia",
+             ["programador","designer","marketing"]],
+
+            ["🏥 Hospital, clínica ou consultório",
+             ["medico","dentista","enfermeiro","psicologo"]],
+
+            ["🎬 Estúdio de criação, gravação ou fotografia",
+             ["videomaker","fotografo","designer","criador"]],
+
+            ["🏫 Escola, faculdade ou ambiente de ensino",
+             ["professor","psicologo"]],
+
+            ["🏗️ Obras, projetos e construções",
+             ["engenheiro","arquiteto"]],
+
+            ["🚒 Trabalho de ação, emergência e segurança",
+             ["bombeiro","policial"]]
+
+        ]
+    },
+
+
+    {
+        texto:"Quais características mais combinam com sua personalidade?",
+
+        alternativas:[
+
+            ["💡 Criativo e cheio de ideias",
+             ["designer","videomaker","fotografo","criador"]],
+
+            ["🧠 Curioso e investigador",
+             ["cientista","programador","medico"]],
+
+            ["❤️ Empático e preocupado com as pessoas",
+             ["psicologo","enfermeiro","medico","professor"]],
+
+            ["👑 Líder e organizado",
+             ["empresario","marketing","advogado"]],
+
+            ["🛠️ Prático e bom em resolver problemas",
+             ["engenheiro","arquiteto","programador"]],
+
+            ["🔥 Corajoso e gosto de desafios",
+             ["bombeiro","policial","piloto"]]
+
+        ]
+    },
+
+
+    {
+        texto:"Escolha as atividades que você gostaria de realizar profissionalmente:",
+
+        alternativas:[
+
+            ["📱 Criar aplicativos, sites ou sistemas",
+             ["programador"]],
+
+            ["🩺 Cuidar da saúde e ajudar a salvar vidas",
+             ["medico","enfermeiro","dentista"]],
+
+            ["🎥 Gravar, editar e produzir vídeos",
+             ["videomaker"]],
+
+            ["📸 Trabalhar com fotografia e imagens",
+             ["fotografo","designer"]],
+
+            ["⚖️ Defender pessoas e trabalhar com leis",
+             ["advogado"]],
+
+            ["🏛️ Projetar espaços e construções",
+             ["arquiteto","engenheiro"]],
+
+            ["📚 Ensinar e transmitir conhecimento",
+             ["professor"]],
+
+            ["🔬 Fazer pesquisas e descobertas",
+             ["cientista"]]
+
+        ]
+    },
+
+
+    {
+        texto:"Se você pudesse começar um projeto amanhã, qual escolheria?",
+
+        alternativas:[
+
+            ["🚀 Criar uma empresa ou negócio",
+             ["empresario","marketing"]],
+
+            ["🎬 Produzir um filme ou projeto audiovisual",
+             ["videomaker","fotografo","criador"]],
+
+            ["🧪 Criar uma pesquisa ou experimento",
+             ["cientista","medico"]],
+
+            ["💻 Desenvolver um aplicativo inovador",
+             ["programador","engenheiro"]],
+
+            ["🐶 Criar um projeto para cuidar de animais",
+             ["veterinario"]],
+
+            ["📣 Criar uma campanha para redes sociais",
+             ["marketing","criador","designer"]],
+
+            ["🏫 Criar um projeto para ajudar estudantes",
+             ["professor","psicologo"]],
+
+            ["🌍 Criar algo que melhore a vida das pessoas",
+             ["medico","enfermeiro","engenheiro","empresario"]]
+
+        ]
+    },
+
+
+    {
+        texto:"Pensando no seu futuro, o que faria você se sentir realizado?",
+
+        alternativas:[
+
+            ["💻 Criar algo inovador que muitas pessoas usem",
+             ["programador","engenheiro","designer"]],
+
+            ["❤️ Melhorar ou salvar a vida de alguém",
+             ["medico","enfermeiro","dentista"]],
+
+            ["🎨 Ser reconhecido pelo meu trabalho criativo",
+             ["designer","fotografo","videomaker","criador"]],
+
+            ["💰 Ter meu próprio negócio",
+             ["empresario","marketing"]],
+
+            ["🔬 Fazer uma descoberta importante",
+             ["cientista"]],
+
+            ["⚖️ Defender pessoas e buscar justiça",
+             ["advogado"]],
+
+            ["✈️ Viajar e conhecer diferentes lugares",
+             ["piloto","criador"]],
+
+            ["🚒 Fazer diferença em situações de emergência",
+             ["bombeiro","policial"]],
+
+            ["📚 Transformar a vida de pessoas através da educação",
+             ["professor","psicologo"]],
+
+            ["🏗️ Ver algo que projetei construído",
+             ["arquiteto","engenheiro"]]
+
+        ]
+    }
+
+];
+
+
+/* =========================================================
+   PONTUAÇÃO
+========================================================= */
+
+let perguntaAtual = 0;
+
+let respostasSelecionadas = [];
+
+
+/* Criar pontuação automaticamente */
+
+let pontos = {};
+
+Object.keys(profissoes).forEach(profissao => {
+
+    pontos[profissao] = 0;
+
+});
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const textoPergunta =
+    document.getElementById("textoPergunta");
+
+const alternativas =
+    document.getElementById("alternativas");
+
+const numeroPergunta =
+    document.getElementById("numeroPergunta");
+
+const contadorSelecionadas =
+    document.getElementById("contadorSelecionadas");
+
+const botaoContinuar =
+    document.getElementById("botaoContinuar");
+
+const barra =
+    document.getElementById("barra");
+
+
+/* =========================================================
+   MOSTRAR PERGUNTA
+========================================================= */
+
+function mostrarPergunta(){
+
+    const pergunta =
+        perguntas[perguntaAtual];
+
+
+    textoPergunta.textContent =
+        pergunta.texto;
+
+
+    numeroPergunta.textContent =
+        `PERGUNTA ${perguntaAtual + 1} DE ${perguntas.length}`;
+
+
+    alternativas.innerHTML = "";
+
+
+    respostasSelecionadas = [];
+
+
+    atualizarContador();
+
+
+    botaoContinuar.disabled = true;
+
+
+    barra.style.width =
+        ((perguntaAtual + 1) /
+        perguntas.length * 100) + "%";
+
+
+    pergunta.alternativas.forEach(
+        (alternativa, index) => {
+
+            const botao =
+                document.createElement("button");
+
+
+            botao.className =
+                "alternativa";
+
+
+            botao.innerHTML = `
+
+                <span class="check">
+                    ✓
+                </span>
+
+                <span>
+                    ${alternativa[0]}
+                </span>
+
+            `;
+
+
+            botao.onclick = function(){
+
+                selecionarAlternativa(
+                    botao,
+                    index,
+                    alternativa[1]
+                );
+
+            };
+
+
+            alternativas.appendChild(botao);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SELECIONAR MÚLTIPLAS ALTERNATIVAS
+========================================================= */
+
+function selecionarAlternativa(
+    botao,
+    index,
+    profissoesDaResposta
+){
+
+    const jaSelecionada =
+        respostasSelecionadas.find(
+            resposta => resposta.index === index
+        );
+
+
+    if(jaSelecionada){
+
+        respostasSelecionadas =
+            respostasSelecionadas.filter(
+                resposta => resposta.index !== index
+            );
+
+        botao.classList.remove(
+            "selecionada"
+        );
+
+    }
+
+    else{
+
+        respostasSelecionadas.push({
+
+            index:index,
+
+            profissoes:profissoesDaResposta
+
+        });
+
+        botao.classList.add(
+            "selecionada"
+        );
+
+    }
+
+
+    atualizarContador();
+
+}
+
+
+/* =========================================================
+   CONTADOR
+========================================================= */
+
+function atualizarContador(){
+
+    const quantidade =
+        respostasSelecionadas.length;
+
+
+    if(quantidade === 0){
+
+        contadorSelecionadas.textContent =
+            "0 selecionadas";
+
+    }
+
+    else if(quantidade === 1){
+
+        contadorSelecionadas.textContent =
+            "1 selecionada";
+
+    }
+
+    else{
+
+        contadorSelecionadas.textContent =
+            quantidade + " selecionadas";
+
+    }
+
+
+    botaoContinuar.disabled =
+        quantidade === 0;
+
+}
+
+
+/* =========================================================
+   CONTINUAR
+========================================================= */
+
+botaoContinuar.addEventListener(
+    "click",
+    () => {
+
+        if(
+            respostasSelecionadas.length === 0
+        ){
+
+            return;
+
+        }
+
+
+        /*
+         * Cada alternativa escolhida
+         * adiciona pontos às profissões
+         * relacionadas.
+         */
+
+        respostasSelecionadas.forEach(
+            resposta => {
+
+                resposta.profissoes.forEach(
+                    profissao => {
+
+                        if(
+                            pontos[profissao] !== undefined
+                        ){
+
+                            pontos[profissao]++;
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+        perguntaAtual++;
+
+
+        if(
+            perguntaAtual < perguntas.length
+        ){
+
+            mostrarPergunta();
+
+        }
+
+        else{
+
+            mostrarResultado();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   RESULTADO
+========================================================= */
+
+function mostrarResultado(){
+
+    document
+        .getElementById("quiz")
+        .style.display = "none";
+
+
+    document
+        .getElementById("resultado")
+        .style.display = "block";
+
+
+    /*
+     * Ordena as profissões da maior
+     * para a menor pontuação.
+     */
+
+    const ranking =
+        Object.entries(pontos)
+        .sort(
+            (a,b) => b[1] - a[1]
+        );
+
+
+    const melhorProfissao =
+        ranking[0][0];
+
+
+    const dados =
+        profissoes[melhorProfissao];
+
+
+    /*
+     * Ícone principal
+     */
+
+    document
+        .querySelector(".icone-resultado")
+        .textContent =
+        dados.emoji;
+
+
+    /*
+     * Profissão principal
+     */
+
+    document
+        .getElementById(
+            "profissaoPrincipal"
+        )
+        .textContent =
+        dados.nome;
+
+
+    /*
+     * Descrição
+     */
+
+    document
+        .getElementById(
+            "descricaoResultado"
+        )
+        .textContent =
+        gerarDescricao(
+            melhorProfissao
+        );
+
+
+    /*
+     * Lista das 5 melhores profissões
+     */
+
+    const lista =
+        document.getElementById(
+            "listaResultados"
+        );
+
+
+    lista.innerHTML = "";
+
+
+    const melhores =
+        ranking.slice(0,5);
+
+
+    /*
+     * Pontuação máxima possível.
+     *
+     * Como cada pergunta pode gerar
+     * um ponto para uma profissão,
+     * são 6 perguntas.
+     */
+
+    const maximo =
+        perguntas.length;
+
+
+    melhores.forEach(
+        (item,index) => {
+
+            const profissao =
+                item[0];
+
+            const pontosProfissao =
+                item[1];
+
+
+            /*
+             * Evita porcentagem acima de 100%.
+             */
+
+            const porcentagem =
+                Math.min(
+                    100,
+                    Math.round(
+                        (pontosProfissao /
+                        maximo) * 100
+                    )
+                );
+
+
+            const dadosProfissao =
+                profissoes[profissao];
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "resultado-profissao";
+
+
+            let medalha = "";
+
+            if(index === 0){
+
+                medalha = "🥇";
+
+            }
+
+            else if(index === 1){
+
+                medalha = "🥈";
+
+            }
+
+            else if(index === 2){
+
+                medalha = "🥉";
+
+            }
+
+            else{
+
+                medalha = `${index + 1}º`;
+
+            }
+
+
+            div.innerHTML = `
+
+                <div class="resultado-topo">
+
+                    <span class="posicao">
+                        ${medalha}
+                    </span>
+
+                    <span class="emoji-profissao">
+                        ${dadosProfissao.emoji}
+                    </span>
+
+                    <div>
+
+                        <div class="nome-profissao">
+                            ${dadosProfissao.nome}
+                        </div>
+
+                        <div class="area-profissao">
+                            ${dadosProfissao.area}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="barra-profissao">
+
+                    <div
+                        style="width:${porcentagem}%">
+                    </div>
+
+                </div>
+
+
+                <span class="porcentagem">
+                    ${porcentagem}% de afinidade
+                </span>
+
+            `;
+
+
+            lista.appendChild(div);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   DESCRIÇÕES
+========================================================= */
+
+function gerarDescricao(profissao){
+
+    const descricoes = {
+
+        programador:
+        "Você demonstra interesse por tecnologia, lógica, inovação e criação de soluções. O mundo da programação pode ser um caminho muito interessante para o seu perfil.",
+
+        medico:
+        "Seu perfil demonstra interesse em cuidar de pessoas, resolver problemas e contribuir diretamente para a saúde e o bem-estar.",
+
+        psicologo:
+        "Você demonstra empatia, atenção às pessoas e interesse em compreender pensamentos, sentimentos e comportamentos.",
+
+        advogado:
+        "Seu perfil combina com argumentação, comunicação, justiça e resolução de problemas. O Direito pode oferecer muitos caminhos.",
+
+        engenheiro:
+        "Você demonstra facilidade para pensar em soluções, construir projetos e resolver problemas de forma prática e lógica.",
+
+        arquiteto:
+        "Criatividade, planejamento e visão espacial aparecem no seu perfil. Arquitetura pode unir sua criatividade com soluções práticas.",
+
+        designer:
+        "Seu perfil demonstra criatividade, imaginação e interesse em transformar ideias em experiências visuais.",
+
+        fotografo:
+        "Você demonstra sensibilidade visual e interesse em registrar momentos e contar histórias através de imagens.",
+
+        videomaker:
+        "Seu perfil demonstra criatividade, comunicação e interesse em contar histórias através de vídeos e experiências audiovisuais.",
+
+        professor:
+        "Você demonstra interesse em ensinar, compartilhar conhecimento e ajudar outras pessoas a crescerem.",
+
+        veterinario:
+        "Seu perfil demonstra carinho pelos animais, cuidado e interesse pelo bem-estar dos seres vivos.",
+
+        dentista:
+        "Você demonstra interesse pela saúde, atenção aos detalhes e vontade de ajudar pessoas através do cuidado.",
+
+        enfermeiro:
+        "Seu perfil demonstra empatia, responsabilidade e disposição para cuidar das pessoas em momentos importantes.",
+
+        cientista:
+        "Curiosidade e vontade de descobrir respostas fazem parte do seu perfil. A ciência pode ser um excelente caminho.",
+
+        piloto:
+        "Seu perfil demonstra interesse por aventura, responsabilidade, tecnologia e novas experiências.",
+
+        bombeiro:
+        "Coragem, ação e vontade de ajudar aparecem no seu perfil. Você pode se identificar com profissões de emergência e proteção.",
+
+        policial:
+        "Seu perfil demonstra coragem, disciplina e interesse em proteger pessoas e contribuir para a segurança.",
+
+        empresario:
+        "Você demonstra liderança, iniciativa, organização e interesse em criar oportunidades e transformar ideias em negócios.",
+
+        marketing:
+        "Comunicação, criatividade e estratégia aparecem no seu perfil. Marketing pode combinar bastante com suas características.",
+
+        criador:
+        "Você demonstra criatividade, comunicação e interesse em produzir conteúdo e compartilhar ideias com outras pessoas."
+
+    };
+
+
+    return descricoes[profissao] ||
+        "Seu perfil apresenta características que podem combinar com diferentes caminhos profissionais. Continue explorando suas possibilidades!";
+
+}
+
+
+/* =========================================================
+   TELA DE AGRADECIMENTO
+========================================================= */
+
+function mostrarAgradecimento(){
+
+    document
+        .getElementById("resultado")
+        .style.display = "none";
+
+    const tela = document.getElementById("agradecimento");
+    tela.style.display = "block";
+
+    // Reinicia a animação sempre que a tela é aberta.
+    tela.classList.remove("abertura-especial");
+    void tela.offsetWidth;
+    tela.classList.add("abertura-especial");
+
+    criarEfeitoEntrada();
+
+}
+
+function criarEfeitoEntrada(){
+    // Remove partículas anteriores para evitar acumular elementos.
+    const anterior = document.querySelector(".efeito-entrada");
+    if(anterior) anterior.remove();
+
+    const camada = document.createElement("div");
+    camada.className = "efeito-entrada";
+    camada.setAttribute("aria-hidden", "true");
+
+    const flash = document.createElement("div");
+    flash.className = "flash-entrada";
+    camada.appendChild(flash);
+
+    const simbolos = ["✦","✧","✳","·","✦","✧","✨"];
+    for(let i = 0; i < 34; i++){
+        const particula = document.createElement("span");
+        particula.className = "particula-entrada";
+        particula.textContent = simbolos[Math.floor(Math.random() * simbolos.length)];
+
+        const angulo = Math.random() * Math.PI * 2;
+        const distancia = 90 + Math.random() * 260;
+
+        particula.style.setProperty("--x", (15 + Math.random() * 70) + "vw");
+        particula.style.setProperty("--y", (25 + Math.random() * 50) + "vh");
+        particula.style.setProperty("--dx", (Math.cos(angulo) * distancia) + "px");
+        particula.style.setProperty("--dy", (Math.sin(angulo) * distancia) + "px");
+        particula.style.setProperty("--tamanho", (10 + Math.random() * 15) + "px");
+        particula.style.setProperty("--duracao", (1.1 + Math.random() * .8) + "s");
+        particula.style.setProperty("--atraso", (Math.random() * .22) + "s");
+
+        camada.appendChild(particula);
+    }
+
+    document.body.appendChild(camada);
+    setTimeout(() => camada.remove(), 2400);
+}
+
+
+/* =========================================================
+   MENSAGEM SURPRESA INTERATIVA
+========================================================= */
+
+const mensagensSurpresa = [
+    "Você não precisa ter todas as respostas agora. Cada descoberta é um passo na direção do futuro que deseja construir.",
+    "Seu talento pode estar em algo que você ainda nem teve a oportunidade de experimentar. Continue curioso!",
+    "Não tenha medo de mudar de ideia, testar caminhos e recomeçar. O seu futuro também é feito das suas descobertas.",
+    "Grandes histórias começam com pequenas escolhas. Acredite no seu potencial e dê o próximo passo!",
+    "A profissão ideal não precisa definir quem você é. Seus sonhos, valores e possibilidades são muito maiores.",
+    "O futuro não está pronto: ele ganha forma com aquilo que você aprende, cria e escolhe todos os dias."
+];
+
+let ultimaMensagem = -1;
+
+function revelarMensagem(){
+    const caixa = document.getElementById("mensagemSurpresa");
+    const texto = document.getElementById("textoSurpresa");
+    const botao = document.getElementById("botaoSurpresa");
+
+    let indice;
+    do{
+        indice = Math.floor(Math.random() * mensagensSurpresa.length);
+    }while(mensagensSurpresa.length > 1 && indice === ultimaMensagem);
+
+    ultimaMensagem = indice;
+    texto.textContent = mensagensSurpresa[indice];
+
+    caixa.classList.remove("visivel");
+    void caixa.offsetWidth;
+    caixa.classList.add("visivel");
+
+    botao.textContent = "🔄 Receber outra mensagem";
+}
+
+
+/* =========================================================
+   VOLTAR AO INÍCIO
+========================================================= */
+
+function voltarInicio(){
+
+    perguntaAtual = 0;
+
+
+    respostasSelecionadas = [];
+
+
+    /*
+     * Zera todas as profissões.
+     */
+
+    Object.keys(pontos).forEach(
+        profissao => {
+
+            pontos[profissao] = 0;
+
+        }
+    );
+
+
+    document
+        .getElementById("agradecimento")
+        .style.display = "none";
+
+    document.getElementById("agradecimento").classList.remove("abertura-especial");
+    document.getElementById("mensagemSurpresa").classList.remove("visivel");
+    document.getElementById("botaoSurpresa").textContent = "✨ Revelar mensagem surpresa";
+    ultimaMensagem = -1;
+
+
+    document
+        .getElementById("resultado")
+        .style.display = "none";
+
+
+    document
+        .getElementById("quiz")
+        .style.display = "block";
+
+
+    mostrarPergunta();
+
+}
+
+
+/* =========================================================
+   RECEBER FOTO OPCIONAL DA PÁGINA DA CÂMERA
+========================================================= */
+
+(function carregarFotoParticipante(){
+    const faixaFoto = document.getElementById("fotoParticipante");
+    const miniatura = document.getElementById("miniaturaParticipante");
+
+    try{
+        const fotoSalva = localStorage.getItem("fotoRosto");
+
+        // A foto é opcional: sem imagem, o quiz aparece normalmente.
+        if(fotoSalva && fotoSalva.startsWith("data:image/")){
+            miniatura.src = fotoSalva;
+            faixaFoto.style.display = "flex";
+        }else{
+            faixaFoto.style.display = "none";
+        }
+    }catch(erro){
+        // Se o armazenamento estiver indisponível, o quiz continua normalmente.
+        faixaFoto.style.display = "none";
+        console.warn("Não foi possível recuperar a foto:", erro);
+    }
+})();
+
+
+/* =========================================================
+   INICIAR QUIZ
+========================================================= */
+
+mostrarPergunta();
+
+</script>
+
+</body>
+</html>

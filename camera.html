@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scanner Facial - Espelho do Futuro</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#050816,#081B33,#0B2447);
+    color:white;
+    padding:20px;
+}
+
+.container{
+    width:90%;
+    max-width:650px;
+    text-align:center;
+}
+
+h1{
+    color:#65d6ff;
+    margin-bottom:10px;
+    font-size:32px;
+    text-shadow:0 0 15px #00B7FF55;
+}
+
+.subtitulo{
+    opacity:.7;
+    margin-bottom:25px;
+    line-height:1.5;
+}
+
+.camera-box{
+    position:relative;
+    width:100%;
+    aspect-ratio:4/3;
+    background:#000;
+    border-radius:25px;
+    overflow:hidden;
+    border:2px solid #00B7FF;
+    box-shadow:0 0 20px #00B7FF55,0 0 60px #00B7FF22;
+}
+
+#video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transform:scaleX(-1);
+}
+
+.scanner{
+    position:absolute;
+    width:100%;
+    height:3px;
+    left:0;
+    top:0;
+    background:#00B7FF;
+    box-shadow:0 0 10px #00B7FF,0 0 25px #00B7FF;
+    animation:scanner 2.5s linear infinite;
+    pointer-events:none;
+}
+
+@keyframes scanner{
+    0%{top:0;}
+    50%{top:100%;}
+    100%{top:0;}
+}
+
+#status{
+    margin-top:20px;
+    color:#65d6ff;
+    font-size:16px;
+    line-height:1.5;
+}
+
+#capturar,#continuar{
+    margin-top:20px;
+    padding:15px 35px;
+    border:none;
+    border-radius:40px;
+    background:#00B7FF;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 20px #00B7FF55;
+    transition:.3s;
+}
+
+#capturar:hover,#continuar:hover{
+    transform:translateY(-3px);
+    box-shadow:0 0 30px #00B7FF;
+}
+
+#capturar:active,#continuar:active{
+    transform:scale(.97);
+}
+
+#capturar:disabled,#continuar:disabled{
+    cursor:wait;
+    opacity:.65;
+}
+
+#foto{
+    display:none;
+    width:100%;
+    max-width:350px;
+    border-radius:20px;
+    margin:20px auto 0;
+    border:2px solid #00B7FF;
+    box-shadow:0 0 20px #00B7FF55;
+}
+
+#continuar{
+    display:block;
+    margin:18px auto 30px;
+    padding:15px 45px;
+    background:linear-gradient(90deg,#008DFF,#00D4FF);
+}
+
+#canvas{display:none;}
+
+@media(max-width:500px){
+    h1{font-size:25px;}
+    .container{width:100%;}
+    #capturar,#continuar{
+        width:100%;
+        font-size:14px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h1>ESPELHO DO FUTURO</h1>
+
+    <p class="subtitulo">
+        Posicione seu rosto diante da câmera
+        e prepare-se para descobrir seu futuro!
+    </p>
+
+    <div class="camera-box">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="scanner"></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <p id="status">🔍 Procurando câmera...</p>
+
+    <button id="capturar" type="button">📸 TIRAR FOTO</button>
+
+    <img id="foto" alt="Foto capturada">
+
+    <button id="continuar" type="button">CONTINUAR SEM FOTO →</button>
+</div>
+
+<script>
+/* =========================================
+   ELEMENTOS DA PÁGINA
+========================================= */
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const foto = document.getElementById("foto");
+const botao = document.getElementById("capturar");
+const status = document.getElementById("status");
+const continuar = document.getElementById("continuar");
+
+let cameraStream = null;
+
+/* Limpa a foto anterior para que um participante novo
+   não veja a imagem de quem usou a página antes. */
+try{
+    localStorage.removeItem("fotoRosto");
+}catch(erro){
+    console.warn("Não foi possível limpar a foto anterior:",erro);
+}
+
+/* =========================================
+   SISTEMA DE SONS
+========================================= */
+let audioCtx = null;
+
+function contextoAudio(){
+    if(!audioCtx){
+        const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+
+        if(!AudioContextClass){
+            throw new Error("Áudio não suportado neste navegador.");
+        }
+
+        audioCtx = new AudioContextClass();
+    }
+
+    if(audioCtx.state === "suspended"){
+        audioCtx.resume();
+    }
+
+    return audioCtx;
+}
+
+function criarRuidoCurto(ctx,quando,duracao,frequenciaFiltro){
+    const tamanhoBuffer = Math.floor(ctx.sampleRate * duracao);
+    const buffer = ctx.createBuffer(1,tamanhoBuffer,ctx.sampleRate);
+    const dados = buffer.getChannelData(0);
+
+    for(let i=0;i<tamanhoBuffer;i++){
+        dados[i] = (Math.random()*2-1) * (1-i/tamanhoBuffer);
+    }
+
+    const fonte = ctx.createBufferSource();
+    fonte.buffer = buffer;
+
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = "bandpass";
+    filtro.frequency.value = frequenciaFiltro;
+    filtro.Q.value = 1.2;
+
+    const ganho = ctx.createGain();
+    ganho.gain.setValueAtTime(0.6,quando);
+    ganho.gain.exponentialRampToValueAtTime(0.001,quando+duracao);
+
+    fonte.connect(filtro);
+    filtro.connect(ganho);
+    ganho.connect(ctx.destination);
+
+    fonte.start(quando);
+    fonte.stop(quando+duracao);
+}
+
+function tocarSomObturador(){
+    try{
+        const ctx = contextoAudio();
+        const agora = ctx.currentTime;
+
+        criarRuidoCurto(ctx,agora,0.035,1800);
+        criarRuidoCurto(ctx,agora+0.09,0.04,1400);
+
+        const flash = ctx.createOscillator();
+        const ganhoFlash = ctx.createGain();
+
+        flash.type = "sine";
+        flash.frequency.setValueAtTime(2200,agora);
+        flash.frequency.exponentialRampToValueAtTime(600,agora+0.08);
+
+        ganhoFlash.gain.setValueAtTime(0.0001,agora);
+        ganhoFlash.gain.exponentialRampToValueAtTime(0.18,agora+0.005);
+        ganhoFlash.gain.exponentialRampToValueAtTime(0.0001,agora+0.09);
+
+        flash.connect(ganhoFlash);
+        ganhoFlash.connect(ctx.destination);
+        flash.start(agora);
+        flash.stop(agora+0.1);
+    }catch(erro){
+        console.warn("Erro no som do obturador:",erro);
+    }
+}
+
+function tocarSomConfirmacao(){
+    try{
+        const ctx = contextoAudio();
+        const agora = ctx.currentTime;
+        const oscilador = ctx.createOscillator();
+        const ganho = ctx.createGain();
+
+        oscilador.type = "triangle";
+        oscilador.frequency.setValueAtTime(500,agora);
+        oscilador.frequency.exponentialRampToValueAtTime(900,agora+0.15);
+
+        ganho.gain.setValueAtTime(0.0001,agora);
+        ganho.gain.exponentialRampToValueAtTime(0.22,agora+0.01);
+        ganho.gain.exponentialRampToValueAtTime(0.0001,agora+0.22);
+
+        oscilador.connect(ganho);
+        ganho.connect(ctx.destination);
+        oscilador.start(agora);
+        oscilador.stop(agora+0.25);
+    }catch(erro){
+        console.warn("Erro no som de confirmação:",erro);
+    }
+}
+
+function tocarSomErro(){
+    try{
+        const ctx = contextoAudio();
+        const agora = ctx.currentTime;
+        const oscilador = ctx.createOscillator();
+        const ganho = ctx.createGain();
+
+        oscilador.type = "square";
+        oscilador.frequency.setValueAtTime(220,agora);
+        oscilador.frequency.exponentialRampToValueAtTime(140,agora+0.2);
+
+        ganho.gain.setValueAtTime(0.0001,agora);
+        ganho.gain.exponentialRampToValueAtTime(0.15,agora+0.01);
+        ganho.gain.exponentialRampToValueAtTime(0.0001,agora+0.25);
+
+        oscilador.connect(ganho);
+        ganho.connect(ctx.destination);
+        oscilador.start(agora);
+        oscilador.stop(agora+0.25);
+    }catch(erro){
+        console.warn("Erro no som de erro:",erro);
+    }
+}
+
+/* =========================================
+   ABRIR A CÂMERA
+========================================= */
+async function abrirCamera(){
+    try{
+        if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+            throw new Error("Navegador sem suporte à câmera. Abra o site por HTTPS.");
+        }
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video:{facingMode:"user"},
+            audio:false
+        });
+
+        video.srcObject = cameraStream;
+        await video.play();
+
+        status.textContent = "🟢 Câmera funcionando! Posicione seu rosto.";
+        status.style.color = "#00FF88";
+    }catch(error){
+        console.error("Erro ao abrir câmera:",error);
+
+        status.textContent =
+            "❌ Não foi possível acessar a câmera. Você pode continuar sem foto.";
+        status.style.color = "#FF4444";
+
+        botao.disabled = true;
+        botao.style.opacity = ".5";
+    }
+}
+
+abrirCamera();
+
+/* =========================================
+   TIRAR FOTO
+   IMPORTANTE: capturar a foto NÃO redireciona
+   para o quiz. A pessoa continua nesta página.
+========================================= */
+botao.addEventListener("click",function(){
+    if(!video.videoWidth){
+        tocarSomErro();
+        alert("A câmera ainda não está pronta. Aguarde ou continue sem foto.");
+        return;
+    }
+
+    tocarSomObturador();
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const contexto = canvas.getContext("2d");
+
+    // Espelha a foto para combinar com a imagem do vídeo.
+    contexto.translate(canvas.width,0);
+    contexto.scale(-1,1);
+    contexto.drawImage(video,0,0,canvas.width,canvas.height);
+
+    const imagem = canvas.toDataURL("image/jpeg",0.90);
+
+    foto.src = imagem;
+    foto.style.display = "block";
+
+    try{
+        localStorage.setItem("fotoRosto",imagem);
+    }catch(error){
+        console.warn("Não foi possível salvar a foto:",error);
+        status.textContent =
+            "⚠️ Foto capturada, mas não foi possível guardá-la neste navegador.";
+    }
+
+    status.textContent = "✅ Foto capturada com sucesso!";
+    status.style.color = "#00FF88";
+
+    botao.textContent = "✅ FOTO CAPTURADA";
+    continuar.textContent = "CONTINUAR →";
+
+    tocarSomConfirmacao();
+
+    // NÃO colocar window.location.href aqui.
+});
+
+/* =========================================
+   CONTINUAR COM OU SEM FOTO
+   Só este botão abre o quiz.
+========================================= */
+continuar.addEventListener("click",function(){
+    tocarSomConfirmacao();
+
+    continuar.disabled = true;
+    continuar.textContent = "ABRINDO O QUIZ...";
+
+    // Os dois arquivos devem estar na mesma pasta
+    // do projeto publicado no GitHub Pages.
+    window.location.href = "./perguntas.html";
+});
+
+/* =========================================
+   ENCERRAR CÂMERA AO SAIR DA PÁGINA
+========================================= */
+window.addEventListener("pagehide",function(){
+    if(cameraStream){
+        cameraStream.getTracks().forEach(track => track.stop());
+    }
+});
+</script>
+</body>
+</html>
